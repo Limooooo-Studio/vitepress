@@ -4,10 +4,9 @@ import { computed, provide, watchEffect } from 'vue'
 
 import { useData } from '../composables/data'
 import { navInjectionKey, useNav } from '../composables/nav'
-import VPNavBar from './VPNavBar.vue'
-import VPNavScreen from './VPNavScreen.vue'
+import VPLimoooNav from './VPLimoooNav.vue'
 
-const { isScreenOpen, closeScreen, toggleScreen } = useNav()
+const { closeScreen } = useNav()
 const { frontmatter } = useData()
 
 const hasNavbar = computed(() => {
@@ -25,16 +24,11 @@ watchEffect(() => {
 
 <template>
   <header v-if="hasNavbar" class="VPNav">
-    <VPNavBar :is-screen-open="isScreenOpen" @toggle-screen="toggleScreen">
-      <template #nav-bar-title-before><slot name="nav-bar-title-before" /></template>
-      <template #nav-bar-title-after><slot name="nav-bar-title-after" /></template>
-      <template #nav-bar-content-before><slot name="nav-bar-content-before" /></template>
-      <template #nav-bar-content-after><slot name="nav-bar-content-after" /></template>
-    </VPNavBar>
-    <VPNavScreen :open="isScreenOpen">
-      <template #nav-screen-content-before><slot name="nav-screen-content-before" /></template>
-      <template #nav-screen-content-after><slot name="nav-screen-content-after" /></template>
-    </VPNavScreen>
+    <!--
+      Limooo fork：页头改为与主站 base.html 的 nav.site-nav 一致的结构。
+      原来的 VPNavBar / VPNavScreen 不再渲染；移动端菜单由 VPLocalNav 提供。
+    -->
+    <VPLimoooNav />
   </header>
 </template>
 

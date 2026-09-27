@@ -1,0 +1,488 @@
+/**
+ * Limooo 品牌外观（页头 / 页脚）
+ *
+ * 这是 Limooooo-Studio/vitepress fork 的定制部分：页头、页脚的结构与样式
+ * 逐条对齐主站 Flask/src/templates/base.html + _footer.html +
+ * src/static/css/{tokens,base}.css，保证 docs.limooo.cn 与 limooo.cn 观感一致。
+ *
+ * 与主站的两处必要差异：
+ *   1. 主站页面不滚动、页脚 position:fixed；文档站要滚动，页脚改为正常文档流。
+ *   2. 主站 --bg/--text 等写的是 :root=深色 / .light-mode=浅色；
+ *      VitePress 是 :root=浅色 / .dark=深色，这里按 VitePress 的方向映射。
+ */
+
+/* ── 设计令牌（对应主站 tokens.css） ── */
+:root {
+  --lm-bg: #ffffff;
+  --lm-text: #1f2328;
+  --lm-line: #e2e2e3;
+  --lm-panel-bg: #f6f6f7;
+  --lm-highlight: #f2f2f3;
+  --lm-accent: #05a5a6;
+  --lm-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --lm-radius-sm: 6px;
+  --lm-radius-md: 10px;
+  --lm-switch-icon: #67676c;
+  --lm-switch-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  /* 字距缩放：中日韩全角按 0.65 收紧，英文半角按 0.3 收紧（主站同款） */
+  --lm-ls-scale: 0.65;
+  --lm-nav-height: 70px;
+  --lm-nav-max-width: 80rem;
+}
+
+.dark {
+  --lm-bg: #1b1b1f;
+  --lm-text: #e2e2e3;
+  --lm-line: #2e2e32;
+  --lm-panel-bg: #202127;
+  --lm-highlight: #2a2a2f;
+  --lm-switch-icon: #dfdfd6;
+  --lm-switch-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+html[lang^='en'] {
+  --lm-ls-scale: 0.3;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --lm-nav-height: 100px;
+  }
+}
+
+/* ── 把 Limooo 令牌接进 VitePress 变量，让正文/侧栏与页头页脚同色 ── */
+:root {
+  --vp-nav-height: var(--lm-nav-height);
+  --vp-c-bg: var(--lm-bg);
+  --vp-c-bg-alt: var(--lm-panel-bg);
+  --vp-c-text-1: var(--lm-text);
+  --vp-c-divider: var(--lm-line);
+  --vp-c-gutter: var(--lm-line);
+  --vp-c-brand-1: #058b8c;
+  --vp-c-brand-2: var(--lm-accent);
+  --vp-c-brand-3: var(--lm-accent);
+}
+
+.dark {
+  --vp-c-brand-1: #35c6c7;
+}
+
+/* VitePress 在 frontmatter navbar:false 时折叠导航；上面的 :root 覆盖了它，补回来 */
+.hide-nav {
+  --vp-nav-height: 0px;
+}
+
+.hide-nav .VPSidebar {
+  --vp-nav-height: 1.375rem;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   页头（对应 base.html 的 nav.site-nav）
+   ══════════════════════════════════════════════════════════════ */
+.VPLimoooNav {
+  width: 100%;
+  height: var(--lm-nav-height);
+  background: var(--lm-bg);
+  /* 父级 .VPNav 是 pointer-events:none（给整页点击让路），导航自己要收回点击 */
+  pointer-events: auto;
+}
+
+.VPLimoooNav .nav-inner {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: var(--lm-nav-max-width);
+  height: 100%;
+  margin: 0 auto;
+  padding-inline: 20px;
+}
+
+@media (min-width: 768px) {
+  .VPLimoooNav .nav-inner {
+    padding-inline: 2rem;
+  }
+}
+
+/* 左上角品牌字：Baloo 2，与页脚 Limooo 同字体（主站 .nav-brand） */
+.VPLimoooNav .nav-brand-link {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.VPLimoooNav .nav-brand {
+  font-family: 'Baloo 2', ui-rounded, system-ui, sans-serif;
+  font-weight: 700;
+  line-height: 1;
+  font-size: 1.125rem;
+  letter-spacing: 0.05em;
+  color: var(--lm-text);
+}
+
+@media (min-width: 768px) {
+  .VPLimoooNav .nav-brand {
+    font-size: 1.5rem;
+  }
+}
+
+.VPLimoooNav .nav-right {
+  display: flex;
+  align-items: center;
+  margin-inline-start: auto;
+}
+
+/* 顶部导航链接（主站 .global-nav a） */
+.VPLimoooNav .global-nav {
+  display: none;
+  align-items: center;
+}
+
+@media (min-width: 768px) {
+  .VPLimoooNav .global-nav {
+    display: flex;
+  }
+}
+
+.VPLimoooNav .nav-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  color: var(--lm-text);
+  transition: color 200ms var(--lm-ease-out);
+  -webkit-font-smoothing: antialiased;
+  white-space: nowrap;
+}
+
+.VPLimoooNav .nav-link.active,
+.VPLimoooNav .nav-link:hover {
+  color: var(--lm-accent);
+}
+
+.VPLimoooNav .nav-external {
+  display: inline-block;
+  margin-inline-start: 4px;
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+  opacity: 0.45;
+}
+
+.VPLimoooNav .nav-divider {
+  display: none;
+  width: 1px;
+  height: 24px;
+  margin: 0 12px;
+  background: var(--lm-line);
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .VPLimoooNav .nav-divider {
+    display: block;
+  }
+}
+
+/* ── 图标按钮（社交链接，主站 .icon-btn） ── */
+.VPLimoooNav .icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: none;
+  border-radius: var(--lm-radius-md);
+  color: var(--lm-text);
+  opacity: 0.75;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    transform 200ms var(--lm-ease-out),
+    background 200ms var(--lm-ease-out),
+    opacity 200ms var(--lm-ease-out);
+}
+
+.VPLimoooNav .icon-btn:active {
+  transform: scale(0.92);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .VPLimoooNav .icon-btn:hover {
+    background: var(--lm-highlight);
+    opacity: 1;
+  }
+}
+
+.VPLimoooNav .icon-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+/* ── 语言切换（主站 .lang-btn + .theme-menu） ── */
+.VPLimoooNav .lang-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.VPLimoooNav .lang-btn {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  height: 36px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--lm-text);
+  transition: color 200ms var(--lm-ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .VPLimoooNav .lang-btn:hover {
+    color: var(--lm-accent);
+  }
+}
+
+.VPLimoooNav .lang-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.VPLimoooNav .lang-chevron {
+  width: 14px;
+  height: 14px;
+  margin-inline-start: 4px;
+  opacity: 0.6;
+}
+
+.VPLimoooNav .lang-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 132px;
+  padding: 4px;
+  background: var(--lm-panel-bg);
+  border: 1px solid var(--lm-line);
+  border-radius: var(--lm-radius-md);
+  z-index: 200;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px) scale(0.92);
+  transform-origin: top right;
+  transition:
+    opacity 150ms var(--lm-ease-out),
+    transform 150ms var(--lm-ease-out),
+    visibility 150ms;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.15);
+}
+
+.VPLimoooNav .lang-menu.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.VPLimoooNav .lang-option {
+  display: block;
+  padding: 8px 14px;
+  margin: 2px 0;
+  border-radius: var(--lm-radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: calc(0.05em * var(--lm-ls-scale));
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--lm-text);
+  opacity: 0.5;
+  transition: background 150ms var(--lm-ease-out);
+}
+
+.VPLimoooNav .lang-option.selected {
+  opacity: 1;
+  background: var(--lm-highlight);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .VPLimoooNav .lang-option:hover {
+    opacity: 1;
+    background: var(--lm-highlight);
+  }
+}
+
+.VPLimoooNav .lang-flag {
+  margin-inline-end: 6px;
+}
+
+/* ── 深浅切换（主站 .appearance-switch） ── */
+.VPLimoooNav .appearance-switch {
+  position: relative;
+  display: block;
+  width: 40px;
+  height: 22px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 1px solid var(--lm-line);
+  border-radius: 11px;
+  background: var(--lm-highlight);
+  cursor: pointer;
+  transition:
+    border-color 200ms var(--lm-ease-out),
+    background-color 200ms var(--lm-ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .VPLimoooNav .appearance-switch:hover {
+    border-color: var(--lm-accent);
+  }
+}
+
+.VPLimoooNav .appearance-check {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--lm-bg);
+  box-shadow: var(--lm-switch-shadow);
+  transform: translateX(0);
+  transition: transform 250ms var(--lm-ease-out);
+}
+
+.dark .VPLimoooNav .appearance-check {
+  transform: translateX(18px);
+}
+
+.VPLimoooNav .appearance-icon {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.VPLimoooNav .appearance-icon svg {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 12px;
+  height: 12px;
+  color: var(--lm-switch-icon);
+  transition: opacity 250ms var(--lm-ease-out);
+}
+
+.VPLimoooNav .appearance-icon .sun {
+  opacity: 1;
+}
+
+.VPLimoooNav .appearance-icon .moon {
+  opacity: 0;
+}
+
+.dark .VPLimoooNav .appearance-icon .sun {
+  opacity: 0;
+}
+
+.dark .VPLimoooNav .appearance-icon .moon {
+  opacity: 1;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   页脚（对应 _footer.html）
+   ══════════════════════════════════════════════════════════════ */
+.VPLimoooFooter {
+  position: relative;
+  z-index: var(--vp-z-index-footer);
+  width: 100%;
+  border-top: 1px solid var(--lm-line);
+  background-color: var(--lm-bg);
+}
+
+/* 有侧栏的文档页：页脚与正文右移，避免钻到固定侧栏下面 */
+@media (min-width: 60rem) {
+  .VPLimoooFooter.has-sidebar {
+    padding-inline-start: var(--vp-sidebar-width);
+  }
+}
+
+@media (min-width: 90rem) {
+  .VPLimoooFooter.has-sidebar {
+    padding-inline-end: calc((100% - var(--vp-layout-max-width)) / 2);
+    padding-inline-start: calc(
+      (100% - var(--vp-layout-max-width)) / 2 + var(--vp-sidebar-width)
+    );
+  }
+}
+
+.VPLimoooFooter .footer-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 1.25rem 0;
+  padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+  color: inherit;
+  text-decoration: none;
+}
+
+.VPLimoooFooter .footer-text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  row-gap: 0.45em;
+  padding-inline: 1rem;
+  font-size: 10px !important;
+  font-weight: 600;
+  letter-spacing: calc(0.15em * var(--lm-ls-scale));
+  opacity: 0.5;
+  text-align: center;
+  line-height: 1;
+}
+
+.VPLimoooFooter .footer-text > span,
+.VPLimoooFooter .footer-text > a {
+  white-space: nowrap;
+}
+
+.VPLimoooFooter .footer-text > .footer-item {
+  display: inline-block;
+}
+
+.VPLimoooFooter .footer-text > .footer-item:not(:first-child)::before {
+  content: '·';
+  margin: 0 0.55em;
+  opacity: 0.7;
+}
+
+@media (max-width: 559px) {
+  .VPLimoooFooter .footer-text > .footer-copyright {
+    flex-basis: 100%;
+  }
+
+  .VPLimoooFooter .footer-text > .footer-copyright + .footer-item::before {
+    content: none;
+  }
+}
+
+.VPLimoooFooter .footer-brand {
+  font-family: 'Baloo 2', ui-rounded, system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-size: 10px;
+  font-size-adjust: 0.6552;
+}
+
+.VPLimoooFooter .footer-source-link {
+  color: inherit;
+  text-decoration: underline;
+  white-space: nowrap;
+}
