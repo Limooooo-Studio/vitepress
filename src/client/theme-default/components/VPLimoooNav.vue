@@ -96,6 +96,24 @@ function toggleAppearance() {
   isDark.value = !isDark.value
 }
 
+/* 桌面端悬停展开/收起（与主站 base.js 的 bindLangHover 一致），
+   触摸端保持点击切换。 */
+const HOVER_QUERY = '(hover: hover) and (pointer: fine)'
+
+function canHover(): boolean {
+  return (
+    typeof window !== 'undefined' && window.matchMedia(HOVER_QUERY).matches
+  )
+}
+
+function onLangEnter() {
+  if (canHover()) menuOpen.value = true
+}
+
+function onLangLeave() {
+  if (canHover()) menuOpen.value = false
+}
+
 function toggleMenu() {
   menuOpen.value = !menuOpen.value
 }
@@ -151,7 +169,13 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocumentClick))
         </div>
         <span class="nav-divider" />
 
-        <div v-if="languages.length > 1" ref="langRoot" class="lang-toggle">
+        <div
+          v-if="languages.length > 1"
+          ref="langRoot"
+          class="lang-toggle"
+          @mouseenter="onLangEnter"
+          @mouseleave="onLangLeave"
+        >
           <button
             type="button"
             class="lang-btn"
